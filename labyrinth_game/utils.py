@@ -117,6 +117,18 @@ def check_steps_limit(game_state: dict) -> None:
     print("Вы слишком долго блуждали по лабиринту. Силы покидают вас...")
     game_state["game_over"] = True
 
+def show_status(game_state: dict) -> None:
+    room = game_state.get("current_room", "unknown")
+    steps = game_state.get("steps_taken", 0)
+    max_steps = game_state.get("max_steps", 25)
+    remaining = max_steps - steps
+    inventory_count = len(game_state.get("player_inventory", []))
+
+    print("\n== STATUS ==")
+    print(f"Комната: {room}")
+    print(f"Шаги: {steps}/{max_steps} (осталось: {remaining})")
+    print(f"Предметов в инвентаре: {inventory_count}")
+
 
 
 def attempt_open_treasure(game_state: dict) -> None:

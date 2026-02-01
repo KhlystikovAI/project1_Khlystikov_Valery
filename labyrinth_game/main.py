@@ -7,13 +7,14 @@ from labyrinth_game.player_actions import (
     take_item,
     use_item,
 )
+
 from labyrinth_game.utils import (
     attempt_open_treasure,
     describe_current_room,
     show_help,
+    show_status,
     solve_puzzle,
 )
-
 
 def process_command(game_state: dict, command_line: str) -> None:
     command_line = command_line.strip()
@@ -31,6 +32,8 @@ def process_command(game_state: dict, command_line: str) -> None:
             describe_current_room(game_state)
         case "inventory":
             show_inventory(game_state)
+        case "status":
+            show_status(game_state)
         case "go":
             if not arg:
                 print("Укажите направление: go north/south/east/west")
