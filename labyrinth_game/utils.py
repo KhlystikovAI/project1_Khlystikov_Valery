@@ -2,7 +2,6 @@
 
 import math
 from labyrinth_game.constants import ROOMS
-from labyrinth_game.constants import COMMANDS_HELP, ROOMS
 
 def get_input(prompt: str = "> ") -> str:
     try:
@@ -110,11 +109,12 @@ def trigger_trap(game_state: dict) -> None:
         print("Вы чудом уцелели и выбрались из ловушки.")
 
 
-def show_help() -> None:
+def show_help(commands: dict[str, str]) -> None:
     print("\nДоступные команды:")
-    for cmd, desc in COMMANDS_HELP.items():
-        print(f"  {cmd:<15} - {desc}")
-
+    for cmd, desc in commands.items():
+        left = (cmd + " " * 16)[:16]  # слева 16 символов, лишнее обрезаем
+        print(f"  {left} {desc}")
+        
 
 def describe_current_room(game_state: dict) -> None:
     room_name = game_state["current_room"]
@@ -137,6 +137,19 @@ def describe_current_room(game_state: dict) -> None:
     if room_data["puzzle"] is not None:
         print('Кажется, здесь есть загадка (используйте команду solve).')
 
+NUMBER_ALIASES = {
+    "0": {"ноль"},
+    "1": {"один"},
+    "2": {"два"},
+    "3": {"три"},
+    "4": {"четыре"},
+    "5": {"пять"},
+    "6": {"шесть"},
+    "7": {"семь"},
+    "8": {"восемь"},
+    "9": {"девять"},
+    "10": {"десять"},
+}
 
 def solve_puzzle(game_state: dict) -> None:
     room_name = game_state["current_room"]
@@ -148,25 +161,42 @@ def solve_puzzle(game_state: dict) -> None:
 
     question, correct_answer = puzzle
     print(question)
+
     user_answer = get_input("Ваш ответ: ").strip().lower()
     correct = str(correct_answer).strip().lower()
 
-    if user_answer != correct:
+    # Альтернативные варианты ответа
+    accepted_answers = {correct}
+
+    if correct in NUMBER_ALIASES:
+        accepted_answers |= NUMBER_ALIASES[correct]
+
+    if user_answer not in accepted_answers:
         print("Неверно. Попробуйте снова.")
+        if room_name == "trap_room":
+            trigger_trap(game_state)
         return
 
     print("Верно! Загадка решена.")
     ROOMS[room_name]["puzzle"] = None
 
-    # Награды
-    if room_name == "trap_room":
-        if "treasure_key" not in game_state["player_inventory"]:
-            game_state["player_inventory"].append("treasure_key")
-            print("Вы нашли особый ключ: treasure_key")
-    elif room_name == "library":
-        if "hint_note" not in game_state["player_inventory"]:
-            game_state["player_inventory"].append("hint_note")
-            print("Вы нашли записку с подсказкой: hint_note")
+    # Награды зависят от комнаты
+    inventory = game_state["player_inventory"]
+
+    match room_name:
+        case "trap_room":
+            if "treasure_key" not in inventory:
+                inventory.append("treasure_key")
+                print("Награда: вы нашли особый ключ: treasure_key")
+        case "library":
+            if "hint_note" not in inventory:
+                inventory.append("hint_note")
+                print("Награда: вы нашли записку с подсказкой: hint_note")
+        case "hall":
+            if "coin" not in inventory:
+                inventory.append("coin")
+                print("Награда: вы получили монету: coin")
+
 
 
 def check_steps_limit(game_state: dict) -> None:

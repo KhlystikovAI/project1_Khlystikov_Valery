@@ -16,6 +16,8 @@ from labyrinth_game.utils import (
     solve_puzzle,
 )
 
+from labyrinth_game.constants import COMMANDS
+
 def process_command(game_state: dict, command_line: str) -> None:
     command_line = command_line.strip()
     if not command_line:
@@ -25,9 +27,14 @@ def process_command(game_state: dict, command_line: str) -> None:
     command = parts[0].lower()
     arg = " ".join(parts[1:]).strip().lower() if len(parts) > 1 else ""
 
+    directions = {"north", "south", "east", "west"}
+    if command in directions and not arg:
+        move_player(game_state, command)
+        return
+
     match command:
         case "help":
-            show_help()
+            show_help(COMMANDS)
         case "look":
             describe_current_room(game_state)
         case "inventory":
@@ -50,8 +57,6 @@ def process_command(game_state: dict, command_line: str) -> None:
                 return
             use_item(game_state, arg)
         case "solve":
-            # В комнате сокровищ solve пытается открыть сундук (ключом или кодом),
-            # иначе — решает загадку комнаты.
             if game_state["current_room"] == "treasure_room":
                 attempt_open_treasure(game_state)
             else:
@@ -74,7 +79,7 @@ def main() -> None:
 
     print("Добро пожаловать в Лабиринт сокровищ!")
     describe_current_room(game_state)
-    show_help()
+    show_help(COMMANDS)
 
     while not game_state["game_over"]:
         command_line = get_input("> ")
