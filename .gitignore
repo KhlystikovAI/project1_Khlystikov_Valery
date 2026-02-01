@@ -1,0 +1,36 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ===== Virtual environments =====
+.venv/
+venv/
+ENV/
+env/
+
+# ===== Poetry / packaging =====
+dist/
+build/
+*.egg-info/
+
+# ===== Ruff / linters =====
+.ruff_cache/
+
+# ===== OS-specific =====
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# ===== IDEs =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Logs =====
+*.log
