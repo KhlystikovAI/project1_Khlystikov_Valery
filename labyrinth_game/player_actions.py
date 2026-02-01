@@ -1,7 +1,8 @@
 # labyrinth_game/player_actions.py
 
 from labyrinth_game.constants import ROOMS
-from labyrinth_game.utils import describe_current_room, get_input
+from labyrinth_game.utils import describe_current_room, get_input, random_event
+
 
 
 def show_inventory(game_state: dict) -> None:
@@ -25,6 +26,7 @@ def move_player(game_state: dict, direction: str) -> None:
 
     game_state["current_room"] = exits[direction]
     game_state["steps_taken"] += 1
+    random_event(game_state)
     describe_current_room(game_state)
 
 

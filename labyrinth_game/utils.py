@@ -1,5 +1,7 @@
 # labyrinth_game/utils.py
 
+import math
+
 from labyrinth_game.constants import COMMANDS_HELP, ROOMS
 def get_input(prompt: str = "> ") -> str:
     try:
@@ -9,6 +11,42 @@ def get_input(prompt: str = "> ") -> str:
         return "quit"
 
 
+def random_event(game_state: dict) -> None:
+    steps = game_state["steps_taken"]
+
+    # Псевдослучайное значение в диапазоне [0; 1)
+    value = abs(math.sin(steps * 12.9898))  # множитель для "перемешивания"
+    chance = value - math.floor(value)
+
+    # Частота событий: примерно 20%
+    if chance < 0.80:
+        return
+
+    # Выбор события (0,1,2)
+    picker_raw = abs(math.sin((steps + 1) * 78.233))
+    picker = int(math.floor((picker_raw - math.floor(picker_raw)) * 3))
+
+    match picker:
+        case 0:
+            # Находка
+            if "coin" not in game_state["player_inventory"]:
+                game_state["player_inventory"].append("coin")
+                print("Событие: вы нашли на полу блестящую монету (coin).")
+            else:
+                print("Событие: вы слышите звон металла где-то в темноте, но ничего не находите.")
+        case 1:
+            # Потеря предмета (если есть что терять)
+            inventory = game_state["player_inventory"]
+            if inventory:
+                idx_raw = abs(math.sin((steps + 2) * 39.3467))
+                idx = int(math.floor((idx_raw - math.floor(idx_raw)) * len(inventory)))
+                lost = inventory.pop(idx)
+                print(f"Событие: в суматохе вы выронили предмет: {lost}.")
+            else:
+                print("Событие: порыв ветра гасит эхо шагов. Вам не по себе, но ничего не происходит.")
+        case _:
+            # Атмосфера 
+            print("Событие: стены словно шепчут... Вы чувствуете, что за вами наблюдают.")
 
 def show_help() -> None:
     print("\nДоступные команды:")
@@ -58,7 +96,7 @@ def solve_puzzle(game_state: dict) -> None:
     print("Верно! Загадка решена.")
     ROOMS[room_name]["puzzle"] = None
 
-    # Награды — простой пример (можешь менять по сюжету)
+    # Награды
     if room_name == "trap_room":
         if "treasure_key" not in game_state["player_inventory"]:
             game_state["player_inventory"].append("treasure_key")
@@ -90,7 +128,7 @@ def attempt_open_treasure(game_state: dict) -> None:
         game_state["game_over"] = True
         return
 
-    # 2) Попытка открыть кодом (взлом через загадку комнаты)
+    # 2) Открыть кодом
     answer = get_input("Сундук заперт. Попробовать ввести код? (да/нет) ").strip().lower()
     if answer != "да":
         print("Вы отступаете от сундука.")
