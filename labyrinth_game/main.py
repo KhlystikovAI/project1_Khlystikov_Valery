@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 
+from labyrinth_game.constants import COMMANDS
 from labyrinth_game.player_actions import (
-    get_input,
     move_player,
     show_inventory,
     take_item,
     use_item,
 )
-
 from labyrinth_game.utils import (
     attempt_open_treasure,
     describe_current_room,
+    get_input,
     show_help,
     show_status,
     solve_puzzle,
 )
 
-from labyrinth_game.constants import COMMANDS
 
 def process_command(game_state: dict, command_line: str) -> None:
     command_line = command_line.strip()

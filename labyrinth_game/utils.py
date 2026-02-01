@@ -1,7 +1,9 @@
 # labyrinth_game/utils.py
 
 import math
+
 from labyrinth_game.constants import ROOMS
+
 
 def get_input(prompt: str = "> ") -> str:
     try:
@@ -10,43 +12,13 @@ def get_input(prompt: str = "> ") -> str:
         print("\nВыход из игры.")
         return "quit"
 
+def pseudo_random(seed: int, modulo: int) -> int:
+    if modulo <= 0:
+        return 0
 
-def random_event(game_state: dict) -> None:
-    steps = game_state["steps_taken"]
-
-    # Псевдослучайное значение в диапазоне [0; 1)
-    value = abs(math.sin(steps * 12.9898))  
-    chance = value - math.floor(value)
-
-    # Частота событий: ~ 20%
-    if chance < 0.80:
-        return
-
-    # Выбор события (0,1,2)
-    picker_raw = abs(math.sin((steps + 1) * 78.233))
-    picker = int(math.floor((picker_raw - math.floor(picker_raw)) * 3))
-
-    match picker:
-        case 0:
-            # Находка
-            if "coin" not in game_state["player_inventory"]:
-                game_state["player_inventory"].append("coin")
-                print("Событие: вы нашли на полу блестящую монету (coin).")
-            else:
-                print("Событие: вы слышите звон металла где-то в темноте, но ничего не находите.")
-        case 1:
-            # Потеря предмета
-            inventory = game_state["player_inventory"]
-            if inventory:
-                idx_raw = abs(math.sin((steps + 2) * 39.3467))
-                idx = int(math.floor((idx_raw - math.floor(idx_raw)) * len(inventory)))
-                lost = inventory.pop(idx)
-                print(f"Событие: в суматохе вы выронили предмет: {lost}.")
-            else:
-                print("Событие: порыв ветра гасит эхо шагов. Вам не по себе, но ничего не происходит.")
-        case _:
-            # Атмосфера 
-            print("Событие: стены словно шепчут... Вы чувствуете, что за вами наблюдают.")
+    x = math.sin(seed * 12.9898) * 43758.5453
+    frac = x - math.floor(x)
+    return int(math.floor(frac * modulo))
 
 def random_event(game_state: dict) -> None:
     steps = game_state.get("steps_taken", 0)
@@ -79,7 +51,6 @@ def random_event(game_state: dict) -> None:
                 print("Случайное событие: без света здесь слишком опасно!")
                 trigger_trap(game_state)
 
-
 def pseudo_random(seed: int, modulo: int) -> int:
     if modulo <= 0:
         return 0
@@ -87,6 +58,7 @@ def pseudo_random(seed: int, modulo: int) -> int:
     x = math.sin(seed * 12.9898) * 43758.5453
     frac = x - math.floor(x)
     return int(math.floor(frac * modulo))
+
 
 def trigger_trap(game_state: dict) -> None:
     print("Ловушка активирована! Пол стал дрожать...")
@@ -245,7 +217,9 @@ def attempt_open_treasure(game_state: dict) -> None:
         return
 
     # 2) Открыть кодом
-    answer = get_input("Сундук заперт. Попробовать ввести код? (да/нет) ").strip().lower()
+    answer = get_input(
+        "Сундук заперт. Попробовать ввести код? (да/нет) "
+        ).strip().lower()
     if answer != "да":
         print("Вы отступаете от сундука.")
         return
