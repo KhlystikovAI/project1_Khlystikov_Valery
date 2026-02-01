@@ -66,6 +66,7 @@ def main() -> None:
         "current_room": "entrance",
         "game_over": False,
         "steps_taken": 0,
+        "max_steps": 25,
     }
 
     print("Добро пожаловать в Лабиринт сокровищ!")

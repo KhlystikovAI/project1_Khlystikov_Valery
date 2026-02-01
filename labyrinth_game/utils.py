@@ -107,6 +107,18 @@ def solve_puzzle(game_state: dict) -> None:
             print("Вы нашли записку с подсказкой: hint_note")
 
 
+def check_steps_limit(game_state: dict) -> None:
+    max_steps = game_state.get("max_steps", 25)
+    steps = game_state.get("steps_taken", 0)
+
+    if steps < max_steps:
+        return
+
+    print("Вы слишком долго блуждали по лабиринту. Силы покидают вас...")
+    game_state["game_over"] = True
+
+
+
 def attempt_open_treasure(game_state: dict) -> None:
     room_name = game_state["current_room"]
     if room_name != "treasure_room":
