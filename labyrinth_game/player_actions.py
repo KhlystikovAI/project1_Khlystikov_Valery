@@ -27,6 +27,7 @@ def move_player(game_state: dict, direction: str) -> None:
 
     game_state["current_room"] = exits[direction]
     game_state["steps_taken"] += 1
+    random_event(game_state)
 
     random_event(game_state)
     check_steps_limit(game_state)

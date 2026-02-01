@@ -1,8 +1,9 @@
 # labyrinth_game/utils.py
 
 import math
-
+from labyrinth_game.constants import ROOMS
 from labyrinth_game.constants import COMMANDS_HELP, ROOMS
+
 def get_input(prompt: str = "> ") -> str:
     try:
         return input(prompt).strip()
@@ -15,10 +16,10 @@ def random_event(game_state: dict) -> None:
     steps = game_state["steps_taken"]
 
     # Псевдослучайное значение в диапазоне [0; 1)
-    value = abs(math.sin(steps * 12.9898))  # множитель для "перемешивания"
+    value = abs(math.sin(steps * 12.9898))  
     chance = value - math.floor(value)
 
-    # Частота событий: примерно 20%
+    # Частота событий: ~ 20%
     if chance < 0.80:
         return
 
@@ -35,7 +36,7 @@ def random_event(game_state: dict) -> None:
             else:
                 print("Событие: вы слышите звон металла где-то в темноте, но ничего не находите.")
         case 1:
-            # Потеря предмета (если есть что терять)
+            # Потеря предмета
             inventory = game_state["player_inventory"]
             if inventory:
                 idx_raw = abs(math.sin((steps + 2) * 39.3467))
@@ -47,6 +48,67 @@ def random_event(game_state: dict) -> None:
         case _:
             # Атмосфера 
             print("Событие: стены словно шепчут... Вы чувствуете, что за вами наблюдают.")
+
+def random_event(game_state: dict) -> None:
+    steps = game_state.get("steps_taken", 0)
+
+    # 10% шанс события
+    if pseudo_random(steps, 10) != 0:
+        return
+
+    event_type = pseudo_random(steps + 7, 3)  # 0..2
+    room_name = game_state.get("current_room", "")
+    inventory = game_state.get("player_inventory", [])
+
+    match event_type:
+        case 0:
+            # Находка
+            print("Случайное событие: вы нашли на полу монетку!")
+            room_items = ROOMS[room_name]["items"]
+            if "coin" not in room_items:
+                room_items.append("coin")
+
+        case 1:
+            # Испуг
+            print("Случайное событие: вы слышите шорох в темноте...")
+            if "sword" in inventory:
+                print("Вы сжимаете меч — существо отступает.")
+
+        case _:
+            # Ловушка
+            if room_name == "trap_room" and "torch" not in inventory:
+                print("Случайное событие: без света здесь слишком опасно!")
+                trigger_trap(game_state)
+
+
+def pseudo_random(seed: int, modulo: int) -> int:
+    if modulo <= 0:
+        return 0
+
+    x = math.sin(seed * 12.9898) * 43758.5453
+    frac = x - math.floor(x)
+    return int(math.floor(frac * modulo))
+
+def trigger_trap(game_state: dict) -> None:
+    print("Ловушка активирована! Пол стал дрожать...")
+
+    inventory = game_state.get("player_inventory", [])
+    steps = game_state.get("steps_taken", 0)
+
+    if inventory:
+        idx = pseudo_random(steps, len(inventory))
+        lost_item = inventory.pop(idx)
+        print(f"Вы потеряли предмет: {lost_item}")
+        return
+
+    # Инвентарь пуст
+    roll = pseudo_random(steps + 1, 10)  # 0..9
+    if roll < 3:
+        print("Ловушка сработала слишком сильно. Вы проиграли.")
+        game_state["game_over"] = True
+    else:
+        print("Вы чудом уцелели и выбрались из ловушки.")
+
 
 def show_help() -> None:
     print("\nДоступные команды:")
