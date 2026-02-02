@@ -76,4 +76,14 @@ COMMANDS = {
     "help": "показать это сообщение",
     "quit": "выйти из игры",
 }
+# случайные события
+EVENT_ROLL_MODULO = 10          # вероятность события: 1/EVENT_ROLL_MODULO
+EVENT_TYPES_COUNT = 3
+
+# ловушки
+TRAP_DEATH_THRESHOLD = 3        # roll < 3 -> game over
+TRAP_DAMAGE_MODULO = 10
+
+# лимит шагов
+DEFAULT_MAX_STEPS = 25
 

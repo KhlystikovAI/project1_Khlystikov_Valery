@@ -1,6 +1,13 @@
 # labyrinth_game/utils.py
 
 import math
+from labyrinth_game.constants import (
+    DEFAULT_MAX_STEPS,
+    EVENT_ROLL_MODULO,
+    EVENT_TYPES_COUNT,
+    TRAP_DAMAGE_MODULO,
+    TRAP_DEATH_THRESHOLD,
+)
 
 from labyrinth_game.constants import ROOMS
 
@@ -13,6 +20,7 @@ def get_input(prompt: str = "> ") -> str:
         return "quit"
 
 def pseudo_random(seed: int, modulo: int) -> int:
+    """Return deterministic pseudo-random int in range [0, modulo)."""
     if modulo <= 0:
         return 0
 
@@ -21,13 +29,14 @@ def pseudo_random(seed: int, modulo: int) -> int:
     return int(math.floor(frac * modulo))
 
 def random_event(game_state: dict) -> None:
+    """Apply a low-probability random event after movement."""
     steps = game_state.get("steps_taken", 0)
 
     # 10% шанс события
-    if pseudo_random(steps, 10) != 0:
+    if pseudo_random(steps, EVENT_ROLL_MODULO) != 0:
         return
 
-    event_type = pseudo_random(steps + 7, 3)  # 0..2
+    event_type = pseudo_random(steps + 7, EVENT_TYPES_COUNT) 
     room_name = game_state.get("current_room", "")
     inventory = game_state.get("player_inventory", [])
 
@@ -51,16 +60,9 @@ def random_event(game_state: dict) -> None:
                 print("Случайное событие: без света здесь слишком опасно!")
                 trigger_trap(game_state)
 
-def pseudo_random(seed: int, modulo: int) -> int:
-    if modulo <= 0:
-        return 0
-
-    x = math.sin(seed * 12.9898) * 43758.5453
-    frac = x - math.floor(x)
-    return int(math.floor(frac * modulo))
-
 
 def trigger_trap(game_state: dict) -> None:
+     """Trigger a trap: lose an item or possibly end the game."""
     print("Ловушка активирована! Пол стал дрожать...")
 
     inventory = game_state.get("player_inventory", [])
@@ -73,8 +75,8 @@ def trigger_trap(game_state: dict) -> None:
         return
 
     # Инвентарь пуст
-    roll = pseudo_random(steps + 1, 10)  # 0..9
-    if roll < 3:
+    roll = pseudo_random(steps + 1, TRAP_DAMAGE_MODULO)  # 0..9
+    if roll < TRAP_DEATH_THRESHOLD:
         print("Ловушка сработала слишком сильно. Вы проиграли.")
         game_state["game_over"] = True
     else:
@@ -172,7 +174,8 @@ def solve_puzzle(game_state: dict) -> None:
 
 
 def check_steps_limit(game_state: dict) -> None:
-    max_steps = game_state.get("max_steps", 25)
+    """End the game if the player exceeded the allowed number of steps."""
+    max_steps = game_state.get("max_steps", DEFAULT_MAX_STEPS)
     steps = game_state.get("steps_taken", 0)
 
     if steps < max_steps:
